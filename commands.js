@@ -32,6 +32,6 @@ const commands = [
 	}
 ]
 
-const commandList = ["say", "helloWorld"]
+const commandList = commands.map((r) => r.name)
 
 module.exports = {commands, commandList}

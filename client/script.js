@@ -47,6 +47,11 @@ function executeCommand(evt) {
   app.commandCtx = command
   if (command.arguments) {
     app.commandVars = command.arguments
+    var form = document.getElementById("argumentSelectionForm")
+    form.addEventListener("submit", (evt) => {
+      evt.preventDefault()
+      handleArgForm(evt)
+    })
     $("#varSelect").modal("show")
   } else {
     client.send(JSON.stringify({messageType: "command", command: command.name}))
