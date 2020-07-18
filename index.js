@@ -8,6 +8,7 @@ const wss = new WebSocket.Server({host: "0.0.0.0", port: 8222});
 //set up server to receive and parse message
 console.log("WebPad Server is running on port 8222")
 wss.on("connection", function connection(ws) {
+	console.log("A client connected.")
 	ws.send(JSON.stringify({messageType: "handshake"}))
 	ws.on("message", function incoming(message) {
 		parseMessage(message, ws);
@@ -22,7 +23,6 @@ function parseMessage(message, ws) {
 		ws.send(JSON.stringify({messageType: "error", message: "INVALID_JSON"}))
 		return
 	}
-	console.log(message)
 	// message types
 	switch(message.messageType) {
 		case "error":

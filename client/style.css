@@ -1,0 +1,9 @@
+body {
+  margin: 2em;
+}
+
+.command-btn {
+  width: 30%;
+  height: 10%;
+  margin: 0px 3% 2.5%;
+}
