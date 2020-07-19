@@ -21,7 +21,7 @@
       <center>
         <h1 class="text-black-50 font-weight-light">WebPad Client v1</h1><br><br>
         <div id="connectTo" class="text-black-50 font-weight-light" v-if="!isConnected">
-          Connect to: <input v-model="serverAddress"> <button v-on:click="connect" class="btn btn-primary">Connect</button><br><br>
+          Connect to: <input v-model="serverAddress" style="margin-bottom: 0.5em"> <button v-on:click="connect" class="btn btn-primary">Connect</button><br><br>
           <div class="alert alert-danger" role="alert" v-if="alertSent">
             {{ alertMessage }}
           </div>
