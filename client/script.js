@@ -78,6 +78,12 @@ function handleArgForm(evt) {
   $("#varSelect").modal("hide")
 }
 
+var ceil = Math.ceil;
+
+Object.defineProperty(Array.prototype, 'chunk', {value: function(n) {
+    return Array(ceil(this.length/n)).fill().map((_,i) => this.slice(i*n,i*n+n));
+}});
+
 var app = new Vue({
   el: "#app",
   data: {
@@ -92,6 +98,7 @@ var app = new Vue({
   },
   methods: {connect, executeCommand, handleArgForm}
 })
+
 
 function alertC(message) {
   app.alertSent = true;

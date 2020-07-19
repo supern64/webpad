@@ -1,7 +1,7 @@
 {
-  "name": "webpadserver",
-  "version": "1.0.1",
-  "description": "WebPad Server to connect to",
+  "name": "webpad",
+  "version": "1.0.2",
+  "description": "WebPad Server & Client Code",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
