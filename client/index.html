@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <link rel="stylesheet" href="/style.css">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <script src="https://cdn.jsdelivr.net/gh/Olical/EventEmitter/EventEmitter.js"></script>
@@ -59,8 +59,9 @@
                 <div class="modal-body">
                   <form id="argumentSelectionForm">
                     <div v-for="arg in commandVars">
-                      {{ arg.friendlyName }}: <input type="text" v-bind:data-boundto="arg.name" v-bind:required="arg.required ? true : false" v-bind:title="arg.description">
+                      {{ arg.friendlyName }}: <input type="text" style="margin-bottom:1em" v-bind:data-boundto="arg.name" v-bind:required="arg.required ? true : false" v-bind:title="arg.description">
                     </div>
+                    <div class="alert alert-danger" role="alert" v-if="alertSent">{{ alertMessage }}</div>
                   </form>
                 </div>
                 <div class="modal-footer">

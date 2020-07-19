@@ -52,6 +52,8 @@ function executeCommand(evt) {
       evt.preventDefault()
       handleArgForm(evt)
     })
+    alertN()
+    $('#varSelect').on('hide.bs.modal', function () { alertN() })
     $("#varSelect").modal("show")
   } else {
     client.send(JSON.stringify({messageType: "command", command: command.name}))
@@ -59,12 +61,20 @@ function executeCommand(evt) {
 }
 
 function handleArgForm(evt) {
+  alertN()
   var form = document.getElementById("argumentSelectionForm")
   var mappedArgs = {}
+  var command = app.commandCtx
+  var args = command.arguments
   for (var i of form.elements) {
+    if (i.getAttribute("required") === "required" && i.value.replace(" ", "").length === 0) {
+      alertC("Please type in your " + args.find((r) => { return r.name === i.getAttribute("data-boundto")}).friendlyName)
+      return
+    }
     mappedArgs[i.getAttribute("data-boundto")] = i.value
   }
-  client.send(JSON.stringify({messageType: "command", command: app.commandCtx.name, arguments: mappedArgs}))
+  client.send(JSON.stringify({messageType: "command", command: command.name, arguments: mappedArgs}))
+  alertN()
   $("#varSelect").modal("hide")
 }
 
@@ -87,7 +97,7 @@ function alertC(message) {
   app.alertSent = true;
   app.alertMessage = message;
 }
-function alertN(message) {
+function alertN() {
   app.alertSent = false;
   app.alertMessage = "";
 }
