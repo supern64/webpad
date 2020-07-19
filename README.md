@@ -27,6 +27,6 @@ This involves putting information in the "commands" array. Properties used are:
   - friendlyName: The name that the user sees. [REQUIRED]
   - required: A boolean indicating if the field is required.  
   
-After that, you can start writing your function. The only 2 quirks you need to know is...:
+After that, you can start writing your function. The only 2 quirks you need to know are...
 - Arguments are passed **as one object, not seperately** and uses the internal name for the key.
 - The return value matters. If a function returns false, it is considered unsuccessful and will display an error. If it returns true, it will be considered successful, and if it returns anything else, that return value will be displayed on the client.
