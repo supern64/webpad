@@ -1,14 +1,16 @@
 var client;
 
-function connect() {
+function connect(address) {
   try {
-    client = new WSClient("ws://" + app.serverAddress + ":8222")
+    if (typeof address == "object") { address = null }
+    client = new WSClient("ws://" + (address || app.serverAddress) + ":8222")
   } catch(e) {
     alertC("Connection Failed: " + e)
     return
   }
   client.on("open", (evt) => {
-    app.isConnected = true
+    setStorage("lastConnected", app.serverAddress)
+    app.currentMenu = "control"
     alertN()
     client.send(JSON.stringify({messageType: "fetch"}))
   })
@@ -38,6 +40,13 @@ function connect() {
     app.isConnected = false
     alertC("Connection Closed: " + res)
   })
+}
+
+function disconnect() {
+  client.close(1000)
+  setStorage("lastConnected", "")
+  setTimeout(() => {alertN()}, 200)
+  app.currentMenu = "connect"
 }
 
 function executeCommand(evt) {
@@ -87,7 +96,7 @@ Object.defineProperty(Array.prototype, 'chunk', {value: function(n) {
 var app = new Vue({
   el: "#app",
   data: {
-    isConnected: false,
+    currentMenu: "connect",
     serverAddress: "",
     alertSent: false,
     alertMessage: "",
@@ -96,9 +105,13 @@ var app = new Vue({
     commandVars: [],
     commandCtx: ""
   },
-  methods: {connect, executeCommand, handleArgForm}
+  methods: {connect, disconnect, executeCommand, handleArgForm}
 })
 
+if (readStorage("lastConnected")) {
+  connect(readStorage("lastConnected"))
+  app.serverAddress = readStorage("lastConnected")
+}
 
 function alertC(message) {
   app.alertSent = true;
@@ -107,4 +120,25 @@ function alertC(message) {
 function alertN() {
   app.alertSent = false;
   app.alertMessage = "";
+}
+
+function readStorage(property) {
+  var data = localStorage.getItem("webpad")
+  if (data === null) {
+    localStorage.setItem("webpad", "{}")
+    data = "{}"
+  }
+  data = JSON.parse(data)
+  return data[property]
+}
+function setStorage(property, value) {
+  var data = localStorage.getItem("webpad")
+  if (data === null) {
+    localStorage.setItem("webpad", "{}")
+    data = "{}"
+  }
+  data = JSON.parse(data)
+  data[property] = value
+  localStorage.setItem("webpad", JSON.stringify(data))
+  return true
 }

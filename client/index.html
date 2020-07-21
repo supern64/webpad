@@ -18,15 +18,16 @@
   </head>
   <body>
     <div id="app">
+    <span class="text-black-50 font-weight-light" v-if="currentMenu === 'control'">Connected to {{ serverAddress }} <button class="btn btn-sm btn-primary" style="margin-left: 0.5em" v-on:click="disconnect">Disconnect</button></span>
       <center>
-        <h1 class="text-black-50 font-weight-light">WebPad Client v1</h1><br><br>
-        <div id="connectTo" class="text-black-50 font-weight-light" v-if="!isConnected">
-          Connect to: <input v-model="serverAddress" style="margin-bottom: 0.5em"> <button v-on:click="connect" class="btn btn-primary">Connect</button><br><br>
+        <h1 class="text-black-50 font-weight-light">WebPad Client</h1><br><br>
+        <div id="connectTo" class="text-black-50 font-weight-light" v-if="currentMenu === 'connect'">
+          Connect to: <input v-model="serverAddress" style="margin-bottom: 0.5em; margin-right: 0.5em"> <button v-on:click="connect" class="btn btn-primary">Connect</button><br><br>
           <div class="alert alert-danger" role="alert" v-if="alertSent">
             {{ alertMessage }}
           </div>
         </div>
-        <div id="manageMenu" v-if="isConnected" class="align-middle">
+        <div id="manageMenu" v-if="currentMenu === 'control'" class="align-middle">
           <!-- Command Return Modal -->
           <div class="modal fade" id="commandReturn" tabindex="-1" role="dialog" aria-labelledby="returnModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -81,6 +82,7 @@
 	          </div>
 	      </div>
         </div>
+        <span class="font-weight-light text-black-50">v1.1.0 21-Jul-2020 SuperN64</span>
       </center>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
