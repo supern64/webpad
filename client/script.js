@@ -4,6 +4,7 @@ var apiLevel = "2"
 var connClosed = false
 
 function connect(address) {
+  connClosed = false
   try {
     if (typeof address == "object") { address = null }
     let addr = (address || app.serverAddress)
