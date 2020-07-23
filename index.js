@@ -3,13 +3,28 @@
 // import stuff and init websocket
 const WebSocket = require("ws");
 const commands = require("./commands.js")
-const wss = new WebSocket.Server({host: "0.0.0.0", port: 8222});
+const config = require("./settings.json")
+const package = require("./package.json")
+
+const wss = new WebSocket.Server({host: "0.0.0.0", port: config.port});
 
 //set up server to receive and parse message
-console.log("WebPad Server is running on port 8222")
+console.log("WebPad Server " + package.version + " is running on port " + config.port)
+
 wss.on("connection", function connection(ws) {
 	console.log("A client connected.")
-	ws.send(JSON.stringify({messageType: "handshake"}))
+	if (config.password == null) {
+		ws.authorized = true
+	} else {
+		ws.authorized = false
+	}
+	ws.handshakeSent = false
+	ws.send(JSON.stringify({messageType: "handshake", requiresAuth: !ws.authorized}))
+	setTimeout(() => {
+		if (ws.handshakeSent === false) {
+			ws.close(4001, "No handshake was sent from the client.")
+		}
+	}, 10000)
 	ws.on("message", function incoming(message) {
 		parseMessage(message, ws);
 	});
@@ -28,7 +43,33 @@ function parseMessage(message, ws) {
 		case "error":
 			console.log("Client reported an error to the server: " + message.message)
 			break
+		case "auth":
+			if (ws.authorized === true) {
+				ws.send(JSON.stringify({messageType: "error", message: "ALREADY_PASSED_AUTHENTICATION"}))
+				return
+			}
+			if (message.password == null) {
+				ws.send(JSON.stringify({messageType: "auth", state: false}))
+				return
+			}
+			if (message.password === config.password) {
+				ws.send(JSON.stringify({messageType: "auth", state: true}))
+				ws.authorized = true
+			} else {
+				ws.send(JSON.stringify({messageType: "auth", state: false}))
+			}
+			break
+		case "handshake":
+			if (message.apiLevel !== package.apiLevel) {
+				ws.close(4000, "WebPad Version is incompatible (API level " + message.apiLevel + " and " + package.apiLevel + ").")
+			}
+			ws.handshakeSent = true
+			break
 		case "command":
+			if (!ws.authorized) {
+				ws.send(JSON.stringify({messageType: "error", message: "AUTHENTICATION_NOT_PASSED"}))
+				return
+			}
 			if (!message.command) {
 				ws.send(JSON.stringify({messageType: "error", message: "NO_COMMAND_SPECIFIED"}))
 			} else {

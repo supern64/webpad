@@ -14,7 +14,7 @@ let initialSettings;
 db.defaults({addonStorage: {}})
 
 if (!fs.existsSync("settings.json")) {
-	initialSettings = {apiLevel: package.apiLevel, port: 8222, password: null}
+	initialSettings = {port: 8222, password: null}
 	fs.writeFileSync("settings.json", JSON.stringify(initialSettings))
 } else {
 	initialSetupComplete = true;
