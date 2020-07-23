@@ -37,7 +37,7 @@ function connect(address) {
     }
   })
   client.on("close", (code, res, evt)=> {
-    app.isConnected = false
+    app.currentMenu = "connect"
     alertC("Connection Closed: " + res)
   })
 }
