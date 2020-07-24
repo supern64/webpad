@@ -106,3 +106,6 @@ dist
 # WebPad Server Configuration & Database
 database.json
 config.json
+
+# WebPad Server Addons
+addons/

@@ -71,6 +71,7 @@ function connect(address) {
   client.on("close", (code, res, evt)=> {
     app.currentMenu = "connect"
     connClosed = true
+    $("#password").modal("hide")
     alertC("Connection Closed: " + res)
   })
 }
