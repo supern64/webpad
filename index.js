@@ -13,7 +13,7 @@ let commands = {commands: [], commandList: []}
 const userCommands = require("./commands.js")
 
 commands.commands.push(userCommands.commands)
-commands.commandList.push(userCommands.commandList)
+commands.commandList.push(userCommands.commands.map((r) => r.name))
 
 const manifest = file.getAddonManifest()
 for (i of manifest) {
@@ -22,7 +22,7 @@ for (i of manifest) {
 	}
 	var addon = require(i.filePath)
 	commands.commands.push(addon.commands)
-	commands.commandList.push(addon.commandList)
+	commands.commandList.push(addon.commands.map((r) => r.name))
 }
 
 commands.commands = flatten(commands.commands)

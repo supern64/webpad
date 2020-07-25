@@ -15,6 +15,4 @@ const commands = [
 	}
 ]
 
-const commandList = commands.map((r) => r.name)
-
-module.exports = {commands, commandList}
+module.exports = {commands}

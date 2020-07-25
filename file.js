@@ -1,5 +1,5 @@
 // WebPad File API Module
-// serverInit, setConfig and readConfig are meant to be used by the server.
+// serverInit, setConfig, readConfig, setEnabled and getAddonManifest are meant to be used by the server.
 
 const lowdb = require("lowdb")
 const FileSync = require('lowdb/adapters/FileSync')
