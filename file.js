@@ -31,45 +31,60 @@ function serverInit() {
 			console.log("[ADDONS] Addon at " + i + " cannot be read: Required properties (name, version, main) not found in manifest file.")
 			continue
 		}
-		let addon = addonData.find({name: addonName}).value()
+		let addon = addonData.find({name: manifest.name}).value()
 		let enabled = true
-		if (addon === null) {
-			addonData.push({name: manifest.name, enabled: true, config: {}, data: {}})
+		if (addon == null) {
+			addonData.push({name: manifest.name, enabled: true, config: {}, data: {}}).write()
 		} else {
 			enabled = addon.enabled
 		}
 		addonManifest.push({name: manifest.name, version: manifest.version, main: manifest.main, description: (null || manifest.description), filePath: i, enabled, configs: (manifest.configs ? manifest.configs : {})})
 	}
-	addonData.write()
+	console.log("[ADDONS] Loaded " + addonManifest.length + " addons.")
 	return addonManifest
 }
 
-function addonInit() {
-	let manifest = fs.readFileSync(__dirname + "/manifest.json")
-	manifest = JSON.parse(manifest)
-	context.name = manifest.name
-	let addon = addonData.find({name: manifest.name})
-	context.addon = addon
+function getAddonManifest() {
+	return addonManifest
+}
+
+function addonInit(addonName) { // TODO: Get a better implementation
+	context.name = addonName
+	let addon = addonData.find({name: addonName})
+	context.addon = addon.value()
 	clientInitialized = true
 }
 
 function readStoredData() {
 	if (clientInitialized === false) { throw new Error("Please run addonInit() first.")}
-	return context.addon.value().data
+	return context.addon.data
 }
 
+function writeToData(data) {
+	if (clientInitialized === false) { throw new Error("Please run addonInit() first.")}
+	context.addon.data = data
+	db.write()
+	return
+}
 function readStoredConfig() {
 	if (clientInitialized === false) { throw new Error("Please run addonInit() first.")}
-	return context.addon.value().config
+	return context.addon.config
 }
 
 function setConfig(addonName, data) {
-	let addon = addonData.find({name: addonName})
+	let addon = addonData.find({name: addonName}).value()
 	addon.config = data
-	addon.write()
+	db.write()
 }
 
 function readConfig(addonName) {
 	let addon = addonData.find({name: addonName}).value()
 	return addon.config
 }
+
+function setEnabled(addonName, state) {
+	let addon = addonData.find({name: addonName}).value()
+	addonData.find({name: addonName}).set("enabled", !addon.enabled).write()
+}
+
+module.exports = {serverInit, addonInit, getAddonManifest, readStoredData, writeToData, readStoredConfig, setEnabled, setConfig, readConfig}

@@ -2,9 +2,31 @@
 
 // import stuff and init websocket
 const WebSocket = require("ws");
-const commands = require("./commands.js")
+const flatten = require("lodash.flatten")
+const file = require("./file.js")
+
 const config = require("./settings.json")
 const package = require("./package.json")
+
+// setting up commands
+let commands = {commands: [], commandList: []}
+const userCommands = require("./commands.js")
+
+commands.commands.push(userCommands.commands)
+commands.commandList.push(userCommands.commandList)
+
+const manifest = file.getAddonManifest()
+for (i of manifest) {
+	if (i.enabled === false) {
+		continue
+	}
+	var addon = require(i.filePath)
+	commands.commands.push(addon.commands)
+	commands.commandList.push(addon.commandList)
+}
+
+commands.commands = flatten(commands.commands)
+commands.commandList = flatten(commands.commandList)
 
 const wss = new WebSocket.Server({host: "0.0.0.0", port: config.port});
 

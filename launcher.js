@@ -3,6 +3,7 @@
 const inquirer = require("inquirer")
 const lowdb = require("lowdb")
 const fs = require("fs")
+const file = require("./file.js")
 const FileSync = require('lowdb/adapters/FileSync')
 
 const package = require("./package.json")
@@ -47,7 +48,15 @@ function valuePrompt(values, callback) {
 		results[r.name] = r.currentValue
 	})
 	for (i of values) {
-		choicesArray.push({name: i.friendlyName + ": " + (i.type === "password" ? "*".repeat(i.currentValue.length) : i.currentValue), value: i.name})
+		var behindText;
+		if (i.currentValue == null) {
+			behindText = "Value not set"
+		} else if (i.type === "password") {
+			behindText = "*".repeat(i.currentValue.length)
+		} else {
+			behindText = i.currentValue
+		}
+		choicesArray.push({name: i.friendlyName + ": " + behindText, value: i.name})
 	}
 	choicesArray.push({name: "Exit", value: "exit"})
 	inquirer.prompt([{
@@ -78,6 +87,8 @@ function valuePrompt(values, callback) {
 }
 console.log("WebPad Launcher v" + package.version + "\n")
 
+let manifest = file.serverInit()
+
 function main() {
 	inquirer.prompt([{
 		name: 'action',
@@ -90,6 +101,11 @@ function main() {
 				require('./index.js')
 				break
 			case 'configAddon':
+				if (manifest.length === 0) {
+					console.log("No addons found!")
+					main()
+				}
+				addonConfigPage()
 				break
 			case 'settings':
 				valuePrompt([
@@ -105,6 +121,72 @@ function main() {
 			case 'exit':
 				process.exit()
 				break
+		}
+	})
+}
+
+function addonConfigPage() {
+	let addonList = []
+	manifest.forEach((r) => {
+		addonList.push({value: r.name, name: r.name + (r.description ? ": " + r.description : "")})
+	})
+	addonList.push({value: "exit", name: "Exit"})
+	inquirer.prompt([{
+		name: 'addonToConfigure',
+		message: "Which addon would you like to configure?",
+		type: "list",
+		choices: addonList
+	}]).then(answers => {
+		let addon = answers.addonToConfigure
+		let addonName = answers.addonToConfigure
+		if (addon === "exit") {
+			main()
+		} else {
+			function configurePrompt(addonName) {
+				addon = manifest.find((r) => r.name == addonName)
+				console.log(addon.name + " " + addon.version + (manifest.description ? ": " + manifest.description : ""))
+				console.log("Located at " + addon.filePath)
+				let choices = [{value: "toggleEnable", name: (addon.enabled === true ? "Disable" : "Enable") + " this addon"}]
+				if (addon.configs != null) {
+					choices.push({value: "configureValues", name: "Configure values"})
+				}
+				choices.push({value: "exit", name: "Exit"})
+				inquirer.prompt([{
+					name: 'toConfigure',
+					message: "What would you like to do?",
+					type: "list",
+					choices
+				}]).then(answers => {
+					let toConfigure = answers.toConfigure
+					if (toConfigure === "exit") {
+						addonConfigPage()
+					} else if (toConfigure === "toggleEnable") {
+						addon.enabled = !addon.enabled
+						file.setEnabled(addon.name, addon.enabled)
+						configurePrompt(addonName)
+					} else if (toConfigure === "configureValues") {
+						let configForm = addon.configs
+						let defaultConfigObject;
+						let currentValues = file.readConfig(addon.name)
+						if (currentValues == null) {
+							for (i of configForm) {
+								defaultConfigObject[i.name] = (null || i.default)
+							}
+							file.setConfig(addon.name, defaultConfigObject)
+							currentValues = defaultConfigObject
+						}
+						let promptValues = [] // name friendlyName type default currentValue
+						for (i of configForm) {
+							promptValues.push({name: i.name, friendlyName: i.friendlyName, type: i.type, default: i.default, currentValue: currentValues[i.name]})
+						}
+						valuePrompt(promptValues, (answers) => {
+							file.setConfig(addon.name, answers)
+							configurePrompt(addonName)
+						})
+					}
+				})
+			}
+			configurePrompt(addonName)
 		}
 	})
 }
