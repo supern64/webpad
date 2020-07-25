@@ -18,13 +18,32 @@
   </head>
   <body>
     <div id="app">
-    <span class="text-black-50 font-weight-light" v-if="currentMenu === 'control'">Connected to {{ serverAddress }} <button class="btn btn-sm btn-primary" style="margin-left: 0.5em" v-on:click="disconnect">Disconnect</button></span>
+    <span class="text-black-50 font-weight-light" v-if="currentMenu === 'control'">Connected to {{ serverAddress.split(":")[0] }} <button class="btn btn-sm btn-primary" style="margin-left: 0.5em" v-on:click="disconnect">Disconnect</button></span>
       <center>
         <h1 class="text-black-50 font-weight-light">WebPad Client</h1><br><br>
         <div id="connectTo" class="text-black-50 font-weight-light" v-if="currentMenu === 'connect'">
           Connect to: <input v-model="serverAddress" style="margin-bottom: 0.5em; margin-right: 0.5em"> <button v-on:click="connect" class="btn btn-primary">Connect</button><br><br>
           <div class="alert alert-danger" role="alert" v-if="alertSent">
             {{ alertMessage }}
+          </div>
+          <!-- Password Modal -->
+          <div class="modal fade" id="password" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="passwordModalLabel">Enter your password</h5>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  Password: <input type="password" style="margin-bottom: 1em;" v-model="promptLink">
+                  <div class="alert alert-danger" role="alert" v-if="alertSent">{{ alertMessage }}</div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" v-on:click="cancelPassForm" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" v-on:click="handlePassForm">Enter</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div id="manageMenu" v-if="currentMenu === 'control'" class="align-middle">
@@ -76,13 +95,13 @@
           <div class="alert alert-danger" role="alert" v-if="alertSent">
             {{ alertMessage }}
           </div>
-          <div class="container-fluid">
+          <div class="container-fluid" id="commands">
 	          <div class="row" v-for="subCommands in commands.chunk(3)">
 	          	<button class="btn btn-primary command-btn col-sm" v-bind:data-boundto="command.name" v-bind:title="command.description" v-on:click="executeCommand($event)" v-for="command in subCommands">{{ command.friendlyName }}</button>
 	          </div>
 	      </div>
         </div>
-        <span class="font-weight-light text-black-50">v1.1.0 21-Jul-2020 SuperN64</span>
+        <span class="font-weight-light text-black-50">v2.0.0 25-Jul-2020 SuperN64</span>
       </center>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

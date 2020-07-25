@@ -1,10 +1,11 @@
 {
   "name": "webpad",
-  "version": "1.1.0",
+  "version": "2.0.0",
+  "apiLevel": "2",
   "description": "WebPad Server & Client Code",
-  "main": "index.js",
+  "main": "launcher.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node launcher.js"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,9 @@
   },
   "homepage": "https://github.com/supern64/webpad#readme",
   "dependencies": {
+    "inquirer": "^7.3.2",
+    "lodash.flatten": "^4.4.0",
+    "lowdb": "^1.0.0",
     "ws": "^7.3.1"
   }
 }

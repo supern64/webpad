@@ -1,18 +1,26 @@
 var client;
 
+var apiLevel = "2"
+var connClosed = false
+
 function connect(address) {
+  connClosed = false
   try {
     if (typeof address == "object") { address = null }
-    client = new WSClient("ws://" + (address || app.serverAddress) + ":8222")
+    let addr = (address || app.serverAddress)
+    if (!addr.includes(":")) {
+      addr = addr + ":8222"
+    }
+    client = new WSClient("ws://" + addr)
+    app.serverAddress = addr
   } catch(e) {
     alertC("Connection Failed: " + e)
     return
   }
   client.on("open", (evt) => {
     setStorage("lastConnected", app.serverAddress)
-    app.currentMenu = "control"
     alertN()
-    client.send(JSON.stringify({messageType: "fetch"}))
+    client.send(JSON.stringify({messageType: "handshake", apiLevel: apiLevel}))
   })
   client.on("message", (message, evt) => {
     message = JSON.parse(message)
@@ -21,30 +29,56 @@ function connect(address) {
         if (Object.keys(message).includes("commands")) { // came from a 'fetch' command
           app.commands = message.commands
         }
-        return
+        break
       case "undetermined":
         app.popupData = message.result
         $("#commandReturn").modal('show')
-        return
+        break
       case "error":
         alertC("The server reported an error: " + message.message)
-        return
+        break
       case "handshake":
-        return
+        setTimeout(() => {
+          if (connClosed === true) {
+            return
+          }
+          if (message.requiresAuth === true) {
+            alertN()
+            $("#password").modal("show")
+          } else {
+            client.send(JSON.stringify({messageType: "fetch"}))
+            app.currentMenu = "control"
+            setTimeout(() => $("#commands").show(), 200)
+          }
+        }, 100)
+        break
+      case "auth":
+        if (message.state === true) {
+          alertN()
+          $("#password").modal("hide")
+          client.send(JSON.stringify({messageType: "fetch"}))
+          app.currentMenu = "control"
+          setTimeout(() => $("#commands").show(), 200)
+        } else {
+          alertC("Your password is incorrect, please try again.")
+        }
+        break
       default:
         client.send(JSON.stringify({messageType: "error", message: "MESSAGE_TYPE_INVALID"}))
         break
     }
   })
   client.on("close", (code, res, evt)=> {
-    app.isConnected = false
+    app.currentMenu = "connect"
+    connClosed = true
+    $("#password").modal("hide")
     alertC("Connection Closed: " + res)
   })
 }
 
 function disconnect() {
   client.close(1000)
-  setStorage("lastConnected", "")
+  setStorage("lastConnected", null)
   setTimeout(() => {alertN()}, 200)
   app.currentMenu = "connect"
 }
@@ -87,6 +121,17 @@ function handleArgForm(evt) {
   $("#varSelect").modal("hide")
 }
 
+function cancelPassForm() {
+  client.close(4003)
+  setTimeout(() => {alertN()}, 200)
+  $("#password").modal("hide")
+}
+
+function handlePassForm() {
+  var password = app.promptLink
+  client.send(JSON.stringify({messageType: "auth", password}))
+}
+
 var ceil = Math.ceil;
 
 Object.defineProperty(Array.prototype, 'chunk', {value: function(n) {
@@ -103,14 +148,14 @@ var app = new Vue({
     commands: [],
     popupData: "",
     commandVars: [],
-    commandCtx: ""
+    commandCtx: "",
+    promptLink: ""
   },
-  methods: {connect, disconnect, executeCommand, handleArgForm}
+  methods: {connect, disconnect, executeCommand, handleArgForm, cancelPassForm, handlePassForm}
 })
 
-if (readStorage("lastConnected")) {
+if (readStorage("lastConnected") !== null && readStorage("lastConnected") !== "") {
   connect(readStorage("lastConnected"))
-  app.serverAddress = readStorage("lastConnected")
 }
 
 function alertC(message) {
