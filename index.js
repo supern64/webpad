@@ -4,25 +4,35 @@
 const WebSocket = require("ws");
 const flatten = require("lodash.flatten")
 const file = require("./file.js")
+const requireF = require("import-fresh")
 
 const config = require("./settings.json")
 const package = require("./package.json")
 
 // setting up commands
 let commands = {commands: [], commandList: []}
-const userCommands = require("./commands.js")
 
-commands.commands.push(userCommands.commands)
-commands.commandList.push(userCommands.commands.map((r) => r.name))
+try {
+	const userCommands = requireF("./commands.js")
+	commands.commands.push(userCommands.commands)
+	commands.commandList.push(userCommands.commands.map((r) => r.name))
+} catch(e) {
+	console.log("[SERVER] An error occured while trying to load the user command file.: " + e)
+}
+
 
 const manifest = file.getAddonManifest()
 for (i of manifest) {
 	if (i.enabled === false) {
 		continue
 	}
-	var addon = require(i.filePath)
-	commands.commands.push(addon.commands)
-	commands.commandList.push(addon.commands.map((r) => r.name))
+	try {
+		var addon = requireF(i.filePath)
+		commands.commands.push(addon.commands)
+		commands.commandList.push(addon.commands.map((r) => r.name))
+	} catch(e) {
+		console.log("[SERVER] An error occured while trying to load '" + i.name + "'.: " + e)
+	}
 }
 
 commands.commands = flatten(commands.commands)

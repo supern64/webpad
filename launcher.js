@@ -4,6 +4,7 @@ const inquirer = require("inquirer")
 const lowdb = require("lowdb")
 const fs = require("fs")
 const file = require("./file.js")
+const requireF = require("import-fresh")
 const FileSync = require('lowdb/adapters/FileSync')
 
 const package = require("./package.json")
@@ -98,7 +99,7 @@ function main() {
 	}]).then(answers => {
 		switch(answers.action) {
 			case 'launch':
-				require('./index.js')
+				requireF('./index.js')
 				break
 			case 'configAddon':
 				if (manifest.length === 0) {

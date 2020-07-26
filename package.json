@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/supern64/webpad#readme",
   "dependencies": {
+    "import-fresh": "^3.2.1",
     "inquirer": "^7.3.2",
     "lodash.flatten": "^4.4.0",
     "lowdb": "^1.0.0",
