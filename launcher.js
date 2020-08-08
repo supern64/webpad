@@ -1,19 +1,15 @@
 // WebPad launcher
 
 const inquirer = require("inquirer")
-const lowdb = require("lowdb")
 const fs = require("fs")
 const file = require("./file.js")
 const requireF = require("import-fresh")
 const FileSync = require('lowdb/adapters/FileSync')
 
 const package = require("./package.json")
-const db = lowdb(new FileSync("database.json"))
 
 let initialSetupComplete = false;
 let initialSettings;
-
-db.defaults({addonStorage: []}).write()
 
 if (!fs.existsSync("./addons")) {
 	fs.mkdirSync("./addons")
