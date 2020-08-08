@@ -4,25 +4,35 @@
 const WebSocket = require("ws");
 const flatten = require("lodash.flatten")
 const file = require("./file.js")
+const requireF = require("import-fresh")
 
 const config = require("./settings.json")
 const package = require("./package.json")
 
 // setting up commands
 let commands = {commands: [], commandList: []}
-const userCommands = require("./commands.js")
 
-commands.commands.push(userCommands.commands)
-commands.commandList.push(userCommands.commands.map((r) => r.name))
+try {
+	const userCommands = requireF("./commands.js")
+	commands.commands.push(userCommands.commands)
+	commands.commandList.push(userCommands.commands.map((r) => r.name))
+} catch(e) {
+	console.log("[SERVER] An error occured while trying to load the user command file.: " + e)
+}
+
 
 const manifest = file.getAddonManifest()
 for (i of manifest) {
 	if (i.enabled === false) {
 		continue
 	}
-	var addon = require(i.filePath)
-	commands.commands.push(addon.commands)
-	commands.commandList.push(addon.commands.map((r) => r.name))
+	try {
+		var addon = requireF(i.filePath)
+		commands.commands.push(addon.commands)
+		commands.commandList.push(addon.commands.map((r) => r.name))
+	} catch(e) {
+		console.log("[SERVER] An error occured while trying to load '" + i.name + "'.: " + e)
+	}
 }
 
 commands.commands = flatten(commands.commands)
@@ -35,16 +45,11 @@ console.log("WebPad Server " + package.version + " is running on port " + config
 
 wss.on("connection", function connection(ws) {
 	console.log("A client connected.")
-	if (config.password == null) {
-		ws.authorized = true
-	} else {
-		ws.authorized = false
-	}
-	ws.handshakeSent = false
-	ws.send(JSON.stringify({messageType: "handshake", requiresAuth: !ws.authorized}))
+	ws.authorized = false
+	ws.send(JSON.stringify({messageType: "handshake", requiresAuth: (config.password != null)}))
 	setTimeout(() => {
-		if (ws.handshakeSent === false) {
-			ws.close(4001, "No handshake was sent from the client.")
+		if (ws.authorized === false) {
+			ws.close(4001, "Handshake/authentication timed out.")
 		}
 	}, 10000)
 	ws.on("message", function incoming(message) {
@@ -85,7 +90,9 @@ function parseMessage(message, ws) {
 			if (message.apiLevel !== package.apiLevel) {
 				ws.close(4000, "WebPad Version is incompatible (API level " + message.apiLevel + " and " + package.apiLevel + ").")
 			}
-			ws.handshakeSent = true
+			if (config.password == null) {
+				ws.authorized = true
+			}
 			break
 		case "command":
 			if (!ws.authorized) {
@@ -99,6 +106,10 @@ function parseMessage(message, ws) {
 			}
 			break
 		case "fetch": 
+			if (!ws.authorized) {
+				ws.send(JSON.stringify({messageType: "error", message: "AUTHENTICATION_NOT_PASSED"}))
+				return
+			}
 			ws.send(JSON.stringify({messageType: "success", commands: commands.commands.map((r) => { return {name: r.name, friendlyName: r.friendlyName, description: r.description, arguments: r.arguments}})}))
 			break
 		default:

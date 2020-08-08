@@ -6,6 +6,7 @@ const FileSync = require('lowdb/adapters/FileSync')
 const fs = require("fs")
 
 const db = lowdb(new FileSync("database.json"))
+db.defaults({addonStorage: []}).write()
 
 let addonData = db.get("addonStorage")
 
@@ -34,7 +35,13 @@ function serverInit() {
 		let addon = addonData.find({name: manifest.name}).value()
 		let enabled = true
 		if (addon == null) {
-			addonData.push({name: manifest.name, enabled: true, config: {}, data: {}}).write()
+			let defaultValues = {}
+			if (manifest.configs != null) {
+				for (h of manifest.configs) {
+					defaultValues[h.name] = h.default || null
+				}
+			}
+			addonData.push({name: manifest.name, enabled: true, config: defaultValues, data: {}}).write()
 		} else {
 			enabled = addon.enabled
 		}
