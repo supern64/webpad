@@ -101,6 +101,7 @@ function main() {
 				if (manifest.length === 0) {
 					console.log("No addons found!")
 					main()
+					return
 				}
 				addonConfigPage()
 				break
