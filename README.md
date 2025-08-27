@@ -2,9 +2,7 @@
 
 WebPad is a program for controlling your computer via other devices to perform certain actions.  
 Define your commands in commands.js, and start writing anything!  
-Client at [webpadclient.glitch.me](http://webpadclient.glitch.me).  
-The client source code will be included here as well in the client folder.  
-Note: Older versions of the client are available at [webpadclient.glitch.me/vX](http://webpadclient.glitch.me/v1) where X is the major version of the client.
+Access the client [here](https://cirnoslab.me/webpad/client/)
 
 ## Setting it up
 
